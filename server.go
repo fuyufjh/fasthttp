@@ -386,6 +386,7 @@ type RequestCtx struct {
 	Response Response
 
 	userValues userData
+	userConnValues userData
 
 	lastReadDuration time.Duration
 
@@ -484,6 +485,22 @@ func (ctx *RequestCtx) UserValue(key string) interface{} {
 // under the given key.
 func (ctx *RequestCtx) UserValueBytes(key []byte) interface{} {
 	return ctx.userValues.GetBytes(key)
+}
+
+func (ctx *RequestCtx) SetUserConnValue(key string, value interface{}) {
+	ctx.userConnValues.Set(key, value)
+}
+
+func (ctx *RequestCtx) SetUserConnValueBytes(key []byte, value interface{}) {
+	ctx.userConnValues.SetBytes(key, value)
+}
+
+func (ctx *RequestCtx) UserConnValue(key string) interface{} {
+	return ctx.userConnValues.Get(key)
+}
+
+func (ctx *RequestCtx) UserConnValueBytes(key []byte) interface{} {
+	return ctx.userConnValues.GetBytes(key)
 }
 
 // VisitUserValues calls visitor for each existing userValue.
@@ -1465,6 +1482,7 @@ func (s *Server) serveConn(c net.Conn) error {
 
 	ctx := s.acquireCtx(c)
 	ctx.connTime = connTime
+	ctx.userConnValues.Reset()
 	isTLS := ctx.IsTLS()
 	var (
 		br *bufio.Reader
